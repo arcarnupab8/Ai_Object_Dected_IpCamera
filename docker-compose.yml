@@ -1,0 +1,18 @@
+services:
+  fastapi-app:
+    # สั่งให้ Build จาก Dockerfile ในโฟลเดอร์ปัจจุบัน
+    build: .
+    
+    # ตั้งชื่อ Container ให้จำง่าย
+    container_name: rpi-fastapi-cam
+    
+    # ตั้งให้เริ่มทำงานใหม่อัตโนมัติถ้าเครื่องดับ หรือโปรแกรม Error
+    restart: always
+    
+    # เชื่อม Port 8000 ของ RPi เข้ากับ Port 8000 ของ Container
+    ports:
+      - "8000:8000"
+        
+    # (Optional) Map เวลาให้ตรงกับประเทศไทย
+    environment:
+      - TZ=Asia/Bangkok

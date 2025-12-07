@@ -4,12 +4,20 @@ from fastapi import FastAPI
 import io
 import base64
 import cv2
+import os
+from dotenv import load_dotenv
 from typing import Union
 from pydantic import BaseModel
 from od import detect_objects_with_image
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import StreamingResponse
 
+load_dotenv()
+
+CAMERA_IP = os.getenv("CAMERA_IP")
+CAMERA_PORT = os.getenv("CAMERA_PORT")
+CAMERA_USER = os.getenv("CAMERA_USER")
+CAMERA_PASSWORD = os.getenv("CAMERA_PASSWORD")
 
 app = FastAPI()
 
@@ -100,7 +108,7 @@ async def detect_camera_jpeg():
 @app.get("/detect-ipcamera")
 async def detect_ipcamera():
 
-    snapshot_url = "http://192.168.1.160:28233/snapshot.cgi?user=admin&pwd=888888"
+    snapshot_url = f"http://{CAMERA_IP}:{CAMERA_PORT}/snapshot.cgi?user={CAMERA_USER}&pwd={CAMERA_PASSWORD}"
 
     cap = cv2.VideoCapture(snapshot_url)
     ret, frame = cap.read()

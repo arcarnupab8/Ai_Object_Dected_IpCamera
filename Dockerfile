@@ -8,11 +8,14 @@ ENV PYTHONUNBUFFERED=1
 # 3. กำหนดโฟลเดอร์ทำงานข้างใน Container
 WORKDIR /app
 
-# 4. ติดตั้ง System Libraries ที่จำเป็นสำหรับ OpenCV และการจัดการภาพ
+# 4. ติดตั้ง System Libraries ที่จำเป็นสำหรับ OpenCV, MySQL และการคอมไพล์
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libglib2.0-0 \
     v4l-utils \
+    pkg-config \
+    default-libmysqlclient-dev \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 # 5. คัดลอก requirements.txt เข้าไปก่อน (เพื่อใช้ Cache ช่วยให้ Build เร็ว)

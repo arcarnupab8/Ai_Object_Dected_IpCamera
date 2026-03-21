@@ -1,16 +1,19 @@
 # fastapi dev main.py  ## command run dev test
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 import io
 import base64
 import cv2
 import os
+import numpy as np
 from dotenv import load_dotenv
 from typing import Union
 from pydantic import BaseModel
+import requests
 from od import detect_objects_with_image
 from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
+from find_camera import broadcast_for_cameras
 
 load_dotenv()
 
@@ -105,6 +108,7 @@ async def detect_camera_jpeg():
 
     return StreamingResponse(io.BytesIO(img_bytes), media_type="image/jpeg")
 
+
 @app.get("/detect-ipcamera")
 async def detect_ipcamera():
 
@@ -128,3 +132,42 @@ async def detect_ipcamera():
         "objects": results,
         "image_base64": img_base64
     }
+
+# cached_camera = None
+# @app.get("/detect-ipcamera")
+# async def detect_ipcamera():
+#     global cached_camera
+
+#     # 1. ถ้ายังไม่เจอกล้อง ให้ตะโกนถาม (Broadcast)
+#     if cached_camera is None:
+#         print("🔍 กำลัง Broadcast หา IP/Port กล้อง...")
+#         found_list = broadcast_for_cameras()
+
+#         if not found_list:
+#             # ถ้า Broadcast แล้วเงียบกริบ แปลว่า Network บล็อก หรือกล้องไม่รองรับ ONVIF
+#             return HTTPException(status_code=404, detail="No cameras responded to broadcast")
+        
+#         # สมมติเลือกตัวแรกที่ตอบกลับมา (เพราะเราไม่รู้ IP)
+#         cached_camera = found_list[0]
+#         print(f"🎯 Connected to: {cached_camera}")
+
+#     # 2. ดึงภาพด้วย IP/Port ที่กล้องบอกมาเอง
+#     ip = cached_camera['ip']
+#     port = cached_camera['port']
+    
+#     # URL นี้อาจเปลี่ยนตามยี่ห้อกล้อง แต่ส่วนใหญ่ใช้ snapshot.cgi
+#     snapshot_url = f"http://{ip}:{port}/snapshot.cgi?user={CAMERA_USER}&pwd={CAMERA_PASSWORD}"
+
+#     try:
+#         response = requests.get(snapshot_url, timeout=3)
+#         if response.status_code == 200:
+#             arr = np.frombuffer(response.content, np.uint8)
+#             frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+#             _, buf = cv2.imencode('.jpg', frame)
+#             b64 = base64.b64encode(buf).decode()
+#             return {"connected": f"{ip}:{port}", "image": b64}
+#         else:
+#             raise Exception("Status Error")
+#     except:
+#         cached_camera = None
+#         return HTTPException(status_code=502, detail="Connection failed")
